@@ -17,7 +17,7 @@ build:
 
 requirements:
   build:
-    - patch  # [not win]
+    - patch  # [osx]
     - cmake
     - make  # [linux]
   host:
