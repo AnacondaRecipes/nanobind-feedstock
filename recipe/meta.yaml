@@ -9,7 +9,7 @@ source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
   sha256: cc8412e94acffa20a369191382bcdbb6fbfb302e475e87cacff9516d51023a15
   patches:  # [osx]
-    - patches/0001-remove-from-path.patch  # [osx]
+    - patches/0001-remove-@-symbol-from-path.patch  # [osx]
 
 build:
   number: 0
@@ -18,7 +18,6 @@ build:
 requirements:
   build:
     - patch  # [not win]
-    - m2-patch  # [win]
     - cmake
     - make  # [linux]
   host:
