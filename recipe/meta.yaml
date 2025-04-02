@@ -31,7 +31,6 @@ requirements:
 
 # The pytests are disabled. _ext files missed. Example:
 # test_chrono_ext -> https://github.com/wjakob/nanobind/blob/v2.5.0/tests/test_chrono.py#L3
-
 test:
   imports:
     - nanobind
