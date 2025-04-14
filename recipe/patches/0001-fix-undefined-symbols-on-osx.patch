@@ -1,0 +1,33 @@
+From a43a68aff2c3b7ee4a1023647faa9a093cf39b7e Mon Sep 17 00:00:00 2001
+From: Lorenzo Pirritano <lpirritano@anaconda.com>
+Date: Mon, 14 Apr 2025 19:00:36 +0200
+Subject: [PATCH] fix undefined symbols on osx
+
+---
+ cmake/nanobind-config.cmake | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/cmake/nanobind-config.cmake b/cmake/nanobind-config.cmake
+index cc11fb9..6b8173d 100644
+--- a/cmake/nanobind-config.cmake
++++ b/cmake/nanobind-config.cmake
+@@ -90,12 +90,10 @@ set(NB_OPT_SIZE $<OR:$<CONFIG:Release>,$<CONFIG:MinSizeRel>,$<CONFIG:RelWithDebI
+ 
+ function (nanobind_link_options name)
+   if (APPLE)
+-    if (Python_INTERPRETER_ID STREQUAL "PyPy")
+-      set(NB_LINKER_RESPONSE_FILE darwin-ld-pypy.sym)
+-    else()
+-      set(NB_LINKER_RESPONSE_FILE darwin-ld-cpython.sym)
+-    endif()
+-    target_link_options(${name} PRIVATE "-Wl,@${NB_DIR}/cmake/${NB_LINKER_RESPONSE_FILE}")
++    # Instead of using the response file with -U symbols,
++    # use the dynamic_lookup flag which is designed specifically 
++    # for building Python extensions on macOS
++    target_link_options(${name} PRIVATE "-undefined" "dynamic_lookup")
+   endif()
+ endfunction()
+ 
+-- 
+2.39.1
+
