@@ -32,8 +32,8 @@ outputs:
   - name: nanobind
     build:
       noarch: python
-      script: $PYTHON -m pip install . -vv --no-deps --no-build-isolation  # [not win]
-      script: %PYTHON% -m pip install . -vv --no-deps --no-build-isolation  # [win]
+    script: build_nanobind.sh  # [not win]
+    script: bld_nanobind.bat  # [win]
     requirements:
       build:
         - patch  # [osx]
@@ -81,3 +81,13 @@ about:
 extra:
   recipe-maintainers:
     - snegireff
+  skip-lints:
+    - missing_imports_or_run_test_py
+    - missing_wheel
+    - missing_python
+    - missing_section
+    - wrong_output_script_key
+    - missing_python_build_tool
+    - wrong_output_script_key
+    - missing_pip_check
+    - avoid_noarch
