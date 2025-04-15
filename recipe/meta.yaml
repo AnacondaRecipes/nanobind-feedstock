@@ -27,7 +27,9 @@ outputs:
         - src/nb_internals.cpp
       commands:
         # make sure the internals version matches the package version
-        - if [ $(grep "define NB_INTERNALS_VERSION" src/nb_internals.cpp | grep -E -o '[0-9]+') != "{{ abi_version }}" ]; then exit 1; fi
+        # https://github.com/wjakob/nanobind/blob/v2.5.0/src/nb_internals.cpp#L21
+        - if [ $(grep "define NB_INTERNALS_VERSION" src/nb_internals.cpp | grep -E -o '[0-9]+') != "{{ abi_version }}" ]; then exit 1; fi  # [not win]
+        - powershell -Command "if ((Select-String -Path src\nb_internals.cpp -Pattern 'define NB_INTERNALS_VERSION').Line -match '(\d+)' -and $matches[1] -ne '{{abi_version}}') { exit 1 }"  # [win]
 
   - name: nanobind
     build:
