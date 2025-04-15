@@ -32,8 +32,6 @@ outputs:
         - powershell -Command "if ((Select-String -Path src\nb_internals.cpp -Pattern 'define NB_INTERNALS_VERSION').Line -match '(\d+)' -and $matches[1] -ne '{{abi_version}}') { exit 1 }"  # [win]
 
   - name: nanobind
-    build:
-      noarch: python
     script: build_nanobind.sh  # [not win]
     script: bld_nanobind.bat  # [win]
     requirements:
@@ -88,8 +86,5 @@ extra:
     - missing_wheel
     - missing_python
     - missing_section
-    - wrong_output_script_key
     - missing_python_build_tool
-    - wrong_output_script_key
     - missing_pip_check
-    - avoid_noarch
