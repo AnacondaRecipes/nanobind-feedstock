@@ -32,7 +32,8 @@ outputs:
   - name: nanobind
     build:
       noarch: python
-      script: $PYTHON -m pip install . -vv --no-deps --no-build-isolation
+      script: $PYTHON -m pip install . -vv --no-deps --no-build-isolation  # [not win]
+      script: %PYTHON% -m pip install . -vv --no-deps --no-build-isolation  # [win]
     requirements:
       build:
         - patch  # [osx]
