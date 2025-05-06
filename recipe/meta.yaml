@@ -16,7 +16,7 @@ source:
     - patches/0001-fix-undefined-symbols-on-osx.patch  # [osx]
 
 build:
-  number: 1
+  number: 2
 
 outputs:
   - name: nanobind-abi
