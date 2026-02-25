@@ -1,52 +1,46 @@
 {% set name = "nanobind" %}
-{% set version = "2.5.0" %}
-{% set abi_version = 15 %}
+{% set version = "2.12.0" %}
+{% set abi_version = 19 %}
+{% set robin_map_commit = "188c45569cc2a5dd768077c193830b51d33a5020" %}
 
 package:
   name: {{ name|lower }}-split
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: cc8412e94acffa20a369191382bcdbb6fbfb302e475e87cacff9516d51023a15
-  patches:  # [osx]
-    # TODO: Need to remove the patch after conda updates the linker to a version higher than 609.
-    # Support for response files was added in ld64 609:
-    # https://github.com/tpoechtrager/cctools-port/commit/86cf74fd50016550703435302c33c17474759666
-    - patches/0001-fix-undefined-symbols-on-osx.patch  # [osx]
+  - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+    sha256: 0ae77c1a88f27153fa57045ee00f7b0a7b06b1cd3df942e95a34b38c5d0a5bee
+  - url: https://github.com/Tessil/robin-map/archive/{{ robin_map_commit }}.tar.gz
+    sha256: 2f4be670fa4f53c3261ed7af392b414a00e75591f87da0a8dd525de376430747
+    folder: ext/robin_map
 
 build:
-  number: 2
+  number: 0
 
 outputs:
   - name: nanobind-abi
     version: {{ abi_version }}
     build:
-      noarch: generic
       run_exports:
         - nanobind-abi =={{ abi_version }}
     test:
       source_files:
-        - src/nb_internals.cpp
+        - src/nb_abi.h
       commands:
         # make sure the internals version matches the package version
-        # https://github.com/wjakob/nanobind/blob/v2.5.0/src/nb_internals.cpp#L21
-        - if [ $(grep "define NB_INTERNALS_VERSION" src/nb_internals.cpp | grep -E -o '[0-9]+') != "{{ abi_version }}" ]; then exit 1; fi  # [not win]
-        - powershell -Command "if ((Select-String -Path src\nb_internals.cpp -Pattern 'define NB_INTERNALS_VERSION').Line -match '(\d+)' -and $matches[1] -ne '{{abi_version}}') { exit 1 }"  # [win]
-
+        - if [[ $(grep "define NB_INTERNALS_VERSION" src/nb_abi.h | grep -E -o '[0-9]+') != "{{ abi_version }}" ]]; then exit 1; fi  # [not win]
+        - powershell -Command "if ((Select-String -Path src\nb_abi.h -Pattern 'define NB_INTERNALS_VERSION').Line -match '(\d+)' -and $matches[1] -ne '{{abi_version}}') { exit 1 }"  # [win]
   - name: nanobind
     script: build_nanobind.sh  # [not win]
     script: bld_nanobind.bat  # [win]
     requirements:
-      build:
-        - patch  # [osx]
-        - cmake
-        - make  # [linux]
       host:
         - pip
         - python
-        - wheel
         - setuptools
+        - wheel
+        - cmake
+        - make  # [not win]
         - scikit-build-core >=0.10
       run:
         - python
