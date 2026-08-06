@@ -15,7 +15,7 @@ source:
     folder: ext/robin_map
 
 build:
-  number: 0
+  number: 1
 
 outputs:
   - name: nanobind-abi
