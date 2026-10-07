@@ -1,7 +1,9 @@
 {% set name = "nanobind" %}
-{% set version = "2.12.0" %}
-{% set abi_version = 19 %}
-{% set robin_map_commit = "188c45569cc2a5dd768077c193830b51d33a5020" %}
+{% set version = "2.13.0" %}
+# See: https://github.com/wjakob/nanobind/blob/master/src/nb_abi.h
+{% set abi_version = 20 %}
+# See: https://github.com/wjakob/nanobind/tree/master/ext
+{% set robin_map_commit = "4ec1bf19c6a96125ea22062f38c2cf5b958e448e" %}
 
 package:
   name: {{ name|lower }}-split
@@ -9,13 +11,13 @@ package:
 
 source:
   - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-    sha256: 0ae77c1a88f27153fa57045ee00f7b0a7b06b1cd3df942e95a34b38c5d0a5bee
+    sha256: c7b04d6a6a4cd57985571e605539399b51331ae455d7fce576a5e2fcb89b1dcf
   - url: https://github.com/Tessil/robin-map/archive/{{ robin_map_commit }}.tar.gz
-    sha256: 2f4be670fa4f53c3261ed7af392b414a00e75591f87da0a8dd525de376430747
+    sha256: 4968947bd2e908854481519ec422823af4161a286ff1e16943293b753e80cb3f
     folder: ext/robin_map
 
 build:
-  number: 1
+  number: 0
 
 outputs:
   - name: nanobind-abi
@@ -67,10 +69,12 @@ about:
     near-identical syntax. In contrast to these existing tools, nanobind is
     more efficient: bindings compile in a shorter amount of time, producing
     smaller binaries with better runtime performance.
-  license: BSD-3-Clause
-  license_family: BSD
+  license: BSD-3-Clause and MIT
+  license_family: Other
   license_file:
+    # nanobind license is BSD-3-Clause
     - LICENSE
+    # robin_map license is MIT
     - ext/robin_map/LICENSE
   doc_url: https://github.com/wjakob/nanobind/tree/master/docs
   dev_url: https://github.com/wjakob/nanobind
@@ -78,10 +82,3 @@ about:
 extra:
   recipe-maintainers:
     - snegireff
-  skip-lints:
-    - missing_imports_or_run_test_py
-    - missing_wheel
-    - missing_python
-    - missing_section
-    - missing_python_build_tool
-    - missing_pip_check
