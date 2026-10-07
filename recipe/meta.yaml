@@ -69,9 +69,10 @@ about:
     near-identical syntax. In contrast to these existing tools, nanobind is
     more efficient: bindings compile in a shorter amount of time, producing
     smaller binaries with better runtime performance.
-  license: BSD-3-Clause
-  license_family: BSD
+  license: BSD-3-Clause and MIT
+  license_family: Other
   license_file:
+    # nanobind license is BSD-3-Clause
     - LICENSE
     # robin_map license is MIT
     - ext/robin_map/LICENSE
