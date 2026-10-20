@@ -1,7 +1,7 @@
 {% set name = "nanobind" %}
-{% set version = "2.13.0" %}
-# See: https://github.com/wjakob/nanobind/blob/master/src/nb_abi.h
-{% set abi_version = 20 %}
+{% set version = "2.15.0" %}
+# See: https://github.com/wjakob/nanobind/blob/v2.15.0/src/nb_abi.h
+{% set abi_version = 21 %}
 # See: https://github.com/wjakob/nanobind/tree/master/ext
 {% set robin_map_commit = "4ec1bf19c6a96125ea22062f38c2cf5b958e448e" %}
 
@@ -11,7 +11,7 @@ package:
 
 source:
   - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-    sha256: c7b04d6a6a4cd57985571e605539399b51331ae455d7fce576a5e2fcb89b1dcf
+    sha256: 3eace37a3b8cdadd531fcc6145263985b29821467161d34ff722b0644cf445b5
   - url: https://github.com/Tessil/robin-map/archive/{{ robin_map_commit }}.tar.gz
     sha256: 4968947bd2e908854481519ec422823af4161a286ff1e16943293b753e80cb3f
     folder: ext/robin_map
