@@ -1,6 +1,6 @@
 {% set name = "nanobind" %}
 {% set version = "2.15.0" %}
-# See: https://github.com/wjakob/nanobind/blob/master/src/nb_abi.h
+# See: https://github.com/wjakob/nanobind/blob/v2.15.0/src/nb_abi.h
 {% set abi_version = 21 %}
 # See: https://github.com/wjakob/nanobind/tree/master/ext
 {% set robin_map_commit = "4ec1bf19c6a96125ea22062f38c2cf5b958e448e" %}
