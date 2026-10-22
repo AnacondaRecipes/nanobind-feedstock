@@ -36,8 +36,10 @@ outputs:
         - if [[ $(grep "define NB_INTERNALS_VERSION" src/nb_abi.h | grep -E -o '[0-9]+') != "{{ abi_version }}" ]]; then exit 1; fi  # [not win]
         - powershell -Command "if ((Select-String -Path src\nb_abi.h -Pattern 'define NB_INTERNALS_VERSION').Line -match '(\d+)' -and $matches[1] -ne '{{abi_version}}') { exit 1 }"  # [win]
   - name: nanobind
-    script: build_nanobind.sh  # [not win]
-    script: bld_nanobind.bat  # [win]
+    script: {{ "bld_nanobind.bat" if win else "build_nanobind.sh" }}
+    build:
+      # https://github.com/wjakob/nanobind/blob/v2.10.2/src/__init__.py#L4-L5
+      skip: true  # [py<39]
     requirements:
       build:
         - cmake
@@ -58,9 +60,22 @@ outputs:
       commands:
         - pip check
         - python -c "import nanobind; import os; assert os.path.isdir(nanobind.cmake_dir()) and os.path.isdir(nanobind.include_dir())"
+        # Build an extension against the installed CMake package, then import and call it.
+        - >-
+          python -c "import os, subprocess, sys, nanobind; q = chr(34);
+          os.makedirs('nbt', exist_ok=True);
+          open('nbt/CMakeLists.txt', 'w').write('cmake_minimum_required(VERSION 3.15...3.31)\nproject(nbt LANGUAGES CXX)\nfind_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development.Module)\nfind_package(nanobind CONFIG REQUIRED)\nnanobind_add_module(nbt_ext nbt.cpp)\n');
+          open('nbt/nbt.cpp', 'w').write('#include <nanobind/nanobind.h>\nint add(int a, int b) { return a + b; }\nNB_MODULE(nbt_ext, m) { m.def(' + q + 'add' + q + ', &add); }\n');
+          subprocess.check_call(['cmake', '-G', 'Ninja', '-S', 'nbt', '-B', 'nbt/build', '-DCMAKE_BUILD_TYPE=Release', '-DPython_EXECUTABLE=' + sys.executable, '-Dnanobind_DIR=' + nanobind.cmake_dir()]);
+          subprocess.check_call(['cmake', '--build', 'nbt/build']);
+          sys.path.insert(0, os.path.abspath('nbt/build')); import nbt_ext;
+          assert nbt_ext.add(2, 3) == 5"
       requires:
         - pip
-        - pytest
+        - {{ compiler('cxx') }}
+        - {{ stdlib('c') }}
+        - cmake
+        - ninja-base
 
 about:
   home: https://github.com/wjakob/nanobind
@@ -78,7 +93,7 @@ about:
     - LICENSE
     # robin_map license is MIT
     - ext/robin_map/LICENSE
-  doc_url: https://github.com/wjakob/nanobind/tree/master/docs
+  doc_url: https://nanobind.readthedocs.io
   dev_url: https://github.com/wjakob/nanobind
 
 extra:
