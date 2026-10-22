@@ -1,7 +1,7 @@
 {% set name = "nanobind" %}
-{% set version = "2.15.0" %}
-# See: https://github.com/wjakob/nanobind/blob/v2.15.0/src/nb_abi.h
-{% set abi_version = 21 %}
+{% set version = "2.10.2" %}
+# See: https://github.com/wjakob/nanobind/blob/v2.10.2/src/nb_abi.h
+{% set abi_version = 17 %}
 # See: https://github.com/wjakob/nanobind/tree/master/ext
 {% set robin_map_commit = "4ec1bf19c6a96125ea22062f38c2cf5b958e448e" %}
 
@@ -11,7 +11,7 @@ package:
 
 source:
   - url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
-    sha256: 3eace37a3b8cdadd531fcc6145263985b29821467161d34ff722b0644cf445b5
+    sha256: 08509910ce6d1fadeed69cb0880d4d4fcb77739c6af9bd8fb4419391a3ca4c6b
   - url: https://github.com/Tessil/robin-map/archive/{{ robin_map_commit }}.tar.gz
     sha256: 4968947bd2e908854481519ec422823af4161a286ff1e16943293b753e80cb3f
     folder: ext/robin_map
@@ -22,27 +22,31 @@ build:
 outputs:
   - name: nanobind-abi
     version: {{ abi_version }}
+    requirements:  # analint: missing_section  # metadata-only ABI tag (run_exports), no Python payload
+      host:  # analint: missing_python,missing_python_build_tool  # no Python payload
+      run:  # analint: missing_python  # no Python payload
     build:
       run_exports:
         - nanobind-abi =={{ abi_version }}
-    test:
+    test:  # analint: missing_imports_or_run_test_py  # metadata-only ABI tag (run_exports), no Python payload
       source_files:
         - src/nb_abi.h
-      commands:
+      commands:  # analint: missing_pip_check  # metadata-only ABI tag (run_exports), no Python payload
         # make sure the internals version matches the package version
         - if [[ $(grep "define NB_INTERNALS_VERSION" src/nb_abi.h | grep -E -o '[0-9]+') != "{{ abi_version }}" ]]; then exit 1; fi  # [not win]
         - powershell -Command "if ((Select-String -Path src\nb_abi.h -Pattern 'define NB_INTERNALS_VERSION').Line -match '(\d+)' -and $matches[1] -ne '{{abi_version}}') { exit 1 }"  # [win]
   - name: nanobind
-    script: build_nanobind.sh  # [not win]
-    script: bld_nanobind.bat  # [win]
+    script: {{ "bld_nanobind.bat" if win else "build_nanobind.sh" }}
+    build:
+      # https://github.com/wjakob/nanobind/blob/v2.10.2/src/__init__.py#L4-L5
+      skip: true  # [py<39]
     requirements:
+      build:
+        - cmake
+        - make  # [not win]
       host:
         - pip
         - python
-        - setuptools
-        - wheel
-        - cmake
-        - make  # [not win]
         - scikit-build-core >=0.10
       run:
         - python
@@ -56,9 +60,22 @@ outputs:
       commands:
         - pip check
         - python -c "import nanobind; import os; assert os.path.isdir(nanobind.cmake_dir()) and os.path.isdir(nanobind.include_dir())"
+        # Build an extension against the installed CMake package, then import and call it.
+        - >-
+          python -c "import os, subprocess, sys, nanobind; q = chr(34);
+          os.makedirs('nbt', exist_ok=True);
+          open('nbt/CMakeLists.txt', 'w').write('cmake_minimum_required(VERSION 3.15...3.31)\nproject(nbt LANGUAGES CXX)\nfind_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development.Module)\nfind_package(nanobind CONFIG REQUIRED)\nnanobind_add_module(nbt_ext nbt.cpp)\n');
+          open('nbt/nbt.cpp', 'w').write('#include <nanobind/nanobind.h>\nint add(int a, int b) { return a + b; }\nNB_MODULE(nbt_ext, m) { m.def(' + q + 'add' + q + ', &add); }\n');
+          subprocess.check_call(['cmake', '-G', 'Ninja', '-S', 'nbt', '-B', 'nbt/build', '-DCMAKE_BUILD_TYPE=Release', '-DPython_EXECUTABLE=' + sys.executable, '-Dnanobind_DIR=' + nanobind.cmake_dir()]);
+          subprocess.check_call(['cmake', '--build', 'nbt/build']);
+          sys.path.insert(0, os.path.abspath('nbt/build')); import nbt_ext;
+          assert nbt_ext.add(2, 3) == 5"
       requires:
         - pip
-        - pytest
+        - {{ compiler('cxx') }}
+        - {{ stdlib('c') }}
+        - cmake
+        - ninja-base
 
 about:
   home: https://github.com/wjakob/nanobind
@@ -69,14 +86,14 @@ about:
     near-identical syntax. In contrast to these existing tools, nanobind is
     more efficient: bindings compile in a shorter amount of time, producing
     smaller binaries with better runtime performance.
-  license: BSD-3-Clause and MIT
+  license: BSD-3-Clause AND MIT
   license_family: Other
   license_file:
     # nanobind license is BSD-3-Clause
     - LICENSE
     # robin_map license is MIT
     - ext/robin_map/LICENSE
-  doc_url: https://github.com/wjakob/nanobind/tree/master/docs
+  doc_url: https://nanobind.readthedocs.io
   dev_url: https://github.com/wjakob/nanobind
 
 extra:
